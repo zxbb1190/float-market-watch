@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm dist:win
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = Get-ChildItem -Path "release/*.exe", "release/*.blockmap" -File | ForEach-Object { $_.FullName }
+          if (-not $assets) { throw "No release assets found." }
+          gh release create $env:GITHUB_REF_NAME $assets `
+            --repo $env:GITHUB_REPOSITORY `
+            --title "Float Market Watch $env:GITHUB_REF_NAME" `
+            --notes "Windows 安装版和便携版。"
