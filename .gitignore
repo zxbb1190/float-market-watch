@@ -1,0 +1,8 @@
+node_modules/
+.pnpm-store/
+out/
+release/
+.win-package/
+dist/
+*.log
+.DS_Store
