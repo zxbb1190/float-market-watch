@@ -2,6 +2,7 @@
   "name": "float-market-watch",
   "version": "0.1.1",
   "description": "Personal floating stock watch desktop app.",
+  "author": "zxbb1190",
   "private": false,
   "license": "MIT",
   "main": "./out/main/index.js",
@@ -11,8 +12,8 @@
     "build": "vue-tsc --noEmit && electron-vite build",
     "icons": "node scripts/generate-icons.mjs",
     "preview": "electron-vite preview",
-    "dist": "pnpm build && electron-builder",
-    "dist:win": "pnpm build && electron-builder --win nsis portable --x64"
+    "dist": "pnpm build && electron-builder --publish never",
+    "dist:win": "pnpm build && electron-builder --win nsis portable --x64 --publish never"
   },
   "dependencies": {
     "lucide-vue-next": "^0.468.0",
