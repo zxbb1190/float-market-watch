@@ -42,7 +42,7 @@ button {
 
 .ticker-card {
   position: relative;
-  width: 196px;
+  width: 218px;
   height: 74px;
   display: flex;
   flex-direction: column;
@@ -104,14 +104,14 @@ button {
 }
 
 .ticker-value strong {
-  max-width: 82px;
+  max-width: 102px;
   color: #f8fbfc;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1;
 }
 
 .ticker-value span {
-  max-width: 82px;
+  max-width: 102px;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.15;
@@ -271,7 +271,7 @@ h1 {
 
 .quote-row {
   display: grid;
-  grid-template-columns: minmax(92px, 1fr) 72px;
+  grid-template-columns: minmax(92px, 1fr) 92px;
   gap: 9px;
   align-items: center;
   min-height: 82px;
@@ -325,7 +325,7 @@ h1 {
 .quote-meta {
   grid-column: 1 / 2;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 

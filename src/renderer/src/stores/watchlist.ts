@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Quote, WatchSymbol } from '@renderer/data/quote-provider'
 import { SinaQuoteProvider } from '@renderer/data/providers/sina-quote-provider'
+import { formatPrice } from '@renderer/utils/formatters'
 
 const STORAGE_KEY = 'float-market-watch.symbols.v1'
 const provider = new SinaQuoteProvider()
@@ -97,7 +98,7 @@ export const useWatchlistStore = defineStore('watchlist', () => {
       lastAlertAt.value[key] = now
       window.marketFloat?.notifyAlert(
         `${quote.name} 价格提醒`,
-        `${quote.symbol} 当前 ${quote.price.toFixed(2)}，触发${aboveHit ? '上穿' : '下破'}提醒`
+        `${quote.symbol} 当前 ${formatPrice(quote.price)}，触发${aboveHit ? '上穿' : '下破'}提醒`
       )
     }
   }

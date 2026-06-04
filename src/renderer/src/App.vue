@@ -13,6 +13,7 @@ import {
   Unlock
 } from 'lucide-vue-next'
 import { useWatchlistStore } from '@renderer/stores/watchlist'
+import { formatPrice } from '@renderer/utils/formatters'
 
 const store = useWatchlistStore()
 const viewMode = ref<'mini' | 'panel'>('mini')
@@ -107,9 +108,6 @@ function formatPct(value = 0): string {
   return `${sign}${value.toFixed(2)}%`
 }
 
-function formatPrice(value?: number): string {
-  return value === undefined ? '--' : value.toFixed(2)
-}
 </script>
 
 <template>
@@ -179,7 +177,7 @@ function formatPrice(value?: number): string {
       <div class="lead-strip" v-if="store.leadQuote">
         <div>
           <span>{{ store.leadQuote.name }}</span>
-          <strong>{{ store.leadQuote.price.toFixed(2) }}</strong>
+          <strong>{{ formatPrice(store.leadQuote.price) }}</strong>
         </div>
         <b :class="trendClass(store.leadQuote.changePct)">{{ formatPct(store.leadQuote.changePct) }}</b>
       </div>
@@ -192,13 +190,13 @@ function formatPrice(value?: number): string {
           </div>
 
           <div class="quote-price">
-            <strong>{{ quote.price.toFixed(2) }}</strong>
+            <strong>{{ formatPrice(quote.price) }}</strong>
             <span :class="trendClass(quote.changePct)">{{ formatPct(quote.changePct) }}</span>
           </div>
 
           <div class="quote-meta">
-            <span>高 {{ quote.high.toFixed(2) }}</span>
-            <span>低 {{ quote.low.toFixed(2) }}</span>
+            <span>高 {{ formatPrice(quote.high) }}</span>
+            <span>低 {{ formatPrice(quote.low) }}</span>
           </div>
 
           <div class="alert-controls">

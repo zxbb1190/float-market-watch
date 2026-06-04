@@ -4,7 +4,7 @@ import { is } from '@electron-toolkit/utils'
 
 type FloatViewMode = 'mini' | 'panel'
 
-const MINI_SIZE = { width: 196, height: 74 }
+const MINI_SIZE = { width: 218, height: 74 }
 const PANEL_SIZE = { width: 360, height: 468 }
 const VIEW_SIZES: Record<FloatViewMode, { width: number; height: number }> = {
   mini: MINI_SIZE,
