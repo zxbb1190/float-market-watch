@@ -6,6 +6,14 @@ import { formatPrice } from '../utils/formatters'
 type Limit = 'above' | 'below'
 type Alerts = Partial<Record<GoldSymbol, Partial<Record<Limit, number>>>>
 const storageKey = 'float-market-watch.gold-alerts.v1'
+const costKey = 'float-market-watch.cmb-cost-per-gram.v1'
+
+function parseCost(value: string | null): number | undefined {
+  const text = value?.trim() ?? ''
+  if (!/^(?:\d+(?:\.\d{0,4})?|\.\d{1,4})$/.test(text)) return
+  const cost = Number(text)
+  return cost > 0 && Number.isSafeInteger(Math.round(cost * 10_000)) ? cost : undefined
+}
 
 function loadAlerts(): Alerts {
   const alerts: Alerts = {}
@@ -28,6 +36,27 @@ export const useGoldStore = defineStore('gold', () => {
   const loading = ref(false)
   const checkedAt = ref(0)
   const alerts = ref(loadAlerts())
+  const costPerGram = ref(parseCost(localStorage.getItem(costKey)))
+  const profitPerGram = computed(() => {
+    const quote = quotes.value.CMB
+    if (costPerGram.value === undefined || !quote || goldStatus(quote, checkedAt.value)) return
+    return Number((quote.price - costPerGram.value).toFixed(4))
+  })
+  const profitLabel = computed(() => {
+    const profit = profitPerGram.value
+    if (profit === undefined) return ''
+    if (profit === 0) return '持平'
+    return `${profit > 0 ? '浮盈' : '浮亏'} ${formatPrice(Math.abs(profit))} 元/克`
+  })
+
+  function saveCost(input: string | null): boolean {
+    const cost = parseCost(input)
+    if (input !== null && cost === undefined) return false
+    if (cost === undefined) localStorage.removeItem(costKey)
+    else localStorage.setItem(costKey, String(cost))
+    costPerGram.value = cost
+    return true
+  }
   const triggered = new Set<string>()
   const rows = computed(() => goldInstruments.map((instrument) => {
     const quote = quotes.value[instrument.symbol]
@@ -77,5 +106,5 @@ export const useGoldStore = defineStore('gold', () => {
     checkAlerts()
   }
 
-  return { rows, alerts, loading, refresh, setAlert }
+  return { rows, alerts, loading, refresh, setAlert, costPerGram, profitPerGram, profitLabel, saveCost }
 })

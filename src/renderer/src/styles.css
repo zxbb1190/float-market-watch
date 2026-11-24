@@ -478,3 +478,33 @@ h1 {
 .gold-limits .alert-controls { margin-top: 4px; }
 .gold-limits label { white-space: nowrap; font-size: 11px; }
 .gold-list + .panel-footer { padding-top: 6px; }
+.cost-summary, .cost-editor {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #d8b16b33;
+  color: #c4cdd1;
+  font-size: 11px;
+}
+.cost-summary, .cost-actions { display: flex; align-items: center; gap: 6px; }
+.cost-summary { flex-wrap: wrap; justify-content: space-between; }
+.cost-summary button, .cost-actions button {
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #ffffff0e;
+  color: inherit;
+}
+.cost-summary button { display: inline-flex; align-items: center; gap: 6px; color: #f4d092; }
+.cost-actions { margin-top: 4px; }
+.cost-actions input {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid #d8b16b66;
+  border-radius: 4px;
+  background: #10191e;
+  color: #f6f8f8;
+}
+.cost-actions .cost-save { background: #f4d092; color: #201c16; }
+.cost-editor [role="alert"] { display: block; margin-top: 4px; color: #ffc2af; }
+.ticker-value .ticker-profit { font-size: 11px; }

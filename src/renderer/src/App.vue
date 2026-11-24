@@ -161,6 +161,8 @@ function trendClass(changePct: number): string {
         <div class="ticker-value">
           <strong>{{ formatPrice(activeGold.quote?.price) }}</strong>
           <span v-if="activeGold.status" class="gold-status">{{ activeGold.status }}</span>
+          <span v-else-if="activeGold.symbol === 'CMB' && gold.profitLabel" class="ticker-profit"
+            :class="trendClass(gold.profitPerGram ?? 0)" :title="gold.profitLabel">{{ gold.profitLabel }}</span>
           <span v-else-if="activeGold.quote?.changePct !== undefined" :class="activeChangeClass">{{ formatPct(activeGold.quote.changePct) }}</span>
           <span v-else class="gold-clock">{{ activeGold.quote?.time.slice(-8) }}</span>
         </div>
