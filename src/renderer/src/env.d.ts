@@ -17,9 +17,11 @@ interface QuoteSnapshot {
 }
 
 interface MarketFloatApi {
+  fetchGoldQuotes(): Promise<import('../../shared/gold').GoldQuotes>
   setExpanded(expanded: boolean): Promise<void>
   setViewMode(mode: 'mini' | 'panel'): Promise<void>
-  getState(): Promise<{ locked: boolean }>
+  getState(): Promise<{ locked: boolean; viewMode: 'mini' | 'panel' }>
+  onViewModeChanged(callback: (mode: 'mini' | 'panel') => void): () => void
   showMenu(): Promise<void>
   openExternal(url: string): Promise<void>
   notifyAlert(title: string, body: string): Promise<void>

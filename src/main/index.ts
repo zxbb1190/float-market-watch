@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, Notification, Tray, ipcMain, nativeImage, shell, screen } from 'electron'
 import { join } from 'node:path'
 import { is } from '@electron-toolkit/utils'
+import { fetchGoldQuotes } from './gold'
 
 type FloatViewMode = 'mini' | 'panel'
 
@@ -75,6 +76,7 @@ function setFloatViewMode(mode: FloatViewMode): Electron.Rectangle | undefined {
     width: target.width,
     height: target.height
   })
+  floatWindow.webContents.send('float:view-mode-changed', mode)
 
   return floatWindow.getBounds()
 }
@@ -346,7 +348,9 @@ ipcMain.handle('float:set-view-mode', (_event, mode: FloatViewMode) => {
   return setFloatViewMode(mode)
 })
 
-ipcMain.handle('float:get-state', () => ({ locked }))
+ipcMain.handle('float:get-state', () => ({ locked, viewMode: currentViewMode }))
+
+ipcMain.handle('quotes:fetch-gold', fetchGoldQuotes)
 
 ipcMain.handle('float:show-menu', () => {
   openContextMenu()

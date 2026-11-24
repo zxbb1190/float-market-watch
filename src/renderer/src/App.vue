@@ -13,18 +13,29 @@ import {
   Unlock
 } from 'lucide-vue-next'
 import { useWatchlistStore } from '@renderer/stores/watchlist'
-import { formatPrice } from '@renderer/utils/formatters'
+import { useGoldStore } from '@renderer/stores/gold'
+import { formatPct, formatPrice } from '@renderer/utils/formatters'
+import { goldRefreshMs } from '../../shared/gold'
+import GoldPanel from './GoldPanel.vue'
 
 const store = useWatchlistStore()
+const gold = useGoldStore()
+const sectionKey = 'float-market-watch.section.v1'
+const savedSection = localStorage.getItem(sectionKey)
+const section = ref<'gold' | 'stocks'>(savedSection === 'stocks' ||
+  (!savedSection && localStorage.getItem('float-market-watch.symbols.v1')) ? 'stocks' : 'gold')
+const isGold = computed(() => section.value === 'gold')
 const viewMode = ref<'mini' | 'panel'>('mini')
 const locked = ref(false)
 const newSymbol = ref('')
 const newName = ref('')
 
 let refreshTimer: number | undefined
+let goldTimer: number | undefined
 let carouselTimer: number | undefined
 let removeLockListener: (() => void) | undefined
 let removeRefreshListener: (() => void) | undefined
+let removeViewListener: (() => void) | undefined
 const activeIndex = ref(0)
 
 const isPanel = computed(() => viewMode.value === 'panel')
@@ -33,34 +44,46 @@ const activeQuote = computed(() => {
   if (quotes.length === 0) return undefined
   return quotes[activeIndex.value % quotes.length]
 })
-const activeChangeClass = computed(() => trendClass(activeQuote.value?.changePct ?? 0))
+const activeGold = computed(() => gold.rows[activeIndex.value % gold.rows.length])
+const tickerCount = computed(() => isGold.value ? gold.rows.length : store.sortedQuotes.length)
+const activeChangeClass = computed(() => trendClass(
+  (isGold.value ? activeGold.value.quote?.changePct : activeQuote.value?.changePct) ?? 0
+))
+
+function refreshSection(): void {
+  void (isGold.value ? gold.refresh() : store.refresh())
+}
 
 onMounted(async () => {
-  await store.refresh()
+  void store.refresh()
+  void gold.refresh()
   refreshTimer = window.setInterval(() => store.refresh(), 3000)
+  goldTimer = window.setInterval(() => gold.refresh(), goldRefreshMs)
   carouselTimer = window.setInterval(() => {
-    if (viewMode.value === 'panel' || store.sortedQuotes.length <= 1) return
-    activeIndex.value = (activeIndex.value + 1) % store.sortedQuotes.length
+    if (viewMode.value === 'panel' || tickerCount.value <= 1) return
+    activeIndex.value = (activeIndex.value + 1) % tickerCount.value
   }, 3600)
-  const state = await window.marketFloat?.getState()
-  locked.value = state?.locked ?? false
+  removeViewListener = window.marketFloat?.onViewModeChanged((mode) => { viewMode.value = mode })
   removeLockListener = window.marketFloat?.onLockChanged((value) => {
     locked.value = value
   })
-  removeRefreshListener = window.marketFloat?.onRefreshRequested(() => {
-    store.refresh()
-  })
+  removeRefreshListener = window.marketFloat?.onRefreshRequested(refreshSection)
+  const state = await window.marketFloat?.getState()
+  locked.value = state?.locked ?? false
+  viewMode.value = state?.viewMode ?? 'mini'
 })
 
 onBeforeUnmount(() => {
   if (refreshTimer) window.clearInterval(refreshTimer)
+  if (goldTimer) window.clearInterval(goldTimer)
   if (carouselTimer) window.clearInterval(carouselTimer)
   removeLockListener?.()
   removeRefreshListener?.()
+  removeViewListener?.()
 })
 
 watch(
-  () => store.sortedQuotes.length,
+  tickerCount,
   (length) => {
     if (length === 0) {
       activeIndex.value = 0
@@ -70,6 +93,11 @@ watch(
     activeIndex.value %= length
   }
 )
+
+watch(section, (value) => {
+  activeIndex.value = 0
+  localStorage.setItem(sectionKey, value)
+})
 
 async function setViewMode(mode: 'mini' | 'panel'): Promise<void> {
   await window.marketFloat?.setViewMode(mode)
@@ -103,11 +131,6 @@ function trendClass(changePct: number): string {
   return 'trend-flat'
 }
 
-function formatPct(value = 0): string {
-  const sign = value > 0 ? '+' : ''
-  return `${sign}${value.toFixed(2)}%`
-}
-
 </script>
 
 <template>
@@ -130,7 +153,19 @@ function formatPct(value = 0): string {
         <Lock v-else :size="13" aria-hidden="true" />
       </div>
 
-      <div v-if="activeQuote" :key="activeQuote.symbol" class="ticker-summary">
+      <div v-if="isGold" :key="activeGold.symbol" class="ticker-summary">
+        <div class="ticker-name">
+          <strong>{{ activeGold.name }}</strong>
+          <span>{{ activeGold.symbol === 'CMB' ? '客户卖出' : activeGold.symbol }} · {{ activeGold.unit }}</span>
+        </div>
+        <div class="ticker-value">
+          <strong>{{ formatPrice(activeGold.quote?.price) }}</strong>
+          <span v-if="activeGold.status" class="gold-status">{{ activeGold.status }}</span>
+          <span v-else-if="activeGold.quote?.changePct !== undefined" :class="activeChangeClass">{{ formatPct(activeGold.quote.changePct) }}</span>
+          <span v-else class="gold-clock">{{ activeGold.quote?.time.slice(-8) }}</span>
+        </div>
+      </div>
+      <div v-else-if="activeQuote" :key="activeQuote.symbol" class="ticker-summary">
         <div class="ticker-name">
           <strong>{{ activeQuote.name }}</strong>
           <span>{{ activeQuote.symbol }}</span>
@@ -158,11 +193,14 @@ function formatPct(value = 0): string {
       <header class="panel-header" :class="{ locked }">
         <div>
           <p class="eyebrow">悬浮盯盘</p>
-          <h1>自选行情</h1>
+          <nav class="market-switch" aria-label="行情市场">
+            <button type="button" :aria-pressed="!isGold" @click="section = 'stocks'">自选行情</button>
+            <button type="button" :aria-pressed="isGold" @click="section = 'gold'">黄金</button>
+          </nav>
         </div>
         <div class="header-actions">
-          <span class="live-dot" :class="{ loading: store.loading }"></span>
-          <button class="icon-button" type="button" title="刷新" @click="store.refresh">
+          <span v-if="!isGold" class="live-dot" :class="{ loading: store.loading }"></span>
+          <button class="icon-button" type="button" title="刷新" @click="refreshSection">
             <RefreshCw :size="16" />
           </button>
           <button class="icon-button" type="button" title="收起" @click="setExpanded(false)">
@@ -174,6 +212,8 @@ function formatPct(value = 0): string {
         </div>
       </header>
 
+      <GoldPanel v-if="isGold" />
+      <template v-else>
       <div class="lead-strip" v-if="store.leadQuote">
         <div>
           <span>{{ store.leadQuote.name }}</span>
@@ -232,9 +272,10 @@ function formatPct(value = 0): string {
           <CirclePlus :size="17" />
         </button>
       </form>
+      </template>
 
       <footer class="panel-footer">
-        <span>{{ store.error || '新浪股票/基金行情 · 3秒刷新' }}</span>
+        <span>{{ isGold ? '招行 / 新浪 · 北京时间 · 15秒刷新' : store.error || '新浪股票/基金行情 · 3秒刷新' }}</span>
         <span class="lock-state">
           <Unlock v-if="!locked" :size="12" />
           <Lock v-else :size="12" />

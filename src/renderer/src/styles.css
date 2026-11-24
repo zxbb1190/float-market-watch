@@ -433,3 +433,48 @@ h1 {
   color: #d7e2e6;
   stroke: #d7e2e6;
 }
+
+.market-switch {
+  display: flex;
+  gap: 12px;
+  -webkit-app-region: no-drag;
+}
+
+.market-switch button {
+  padding: 2px 0;
+  background: transparent;
+  color: #a0b0b9;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+}
+
+.market-switch button[aria-pressed="true"] {
+  color: #f6fbfe;
+  border-color: #8bc5d2;
+}
+
+.gold-list { padding: 0 14px; }
+.gold-row { padding: 6px 10px; border-bottom: 1px solid #ffffff16; }
+.gold-row:last-child { border-bottom: 0; }
+.gold-heading, .gold-price-line, .gold-time { display: flex; align-items: center; gap: 8px; }
+.gold-heading { justify-content: space-between; }
+.gold-heading strong { color: #f1f5f6; font-size: 13px; }
+.gold-row small, .bank-prices span, .gold-time { color: #a9b6bd; font-size: 10px; }
+.gold-heading small { margin-left: 8px; }
+.gold-alert { width: 24px; height: 24px; }
+.gold-alert.configured { color: #f4d092; }
+.gold-price-line b, .bank-prices b { color: #f6f8f8; font-size: 17px; font-variant-numeric: tabular-nums; }
+.gold-price-line > span { margin-left: auto; font-size: 12px; }
+.gold-time { min-height: 15px; margin-top: 2px; }
+.gold-time em, .ticker-value .gold-status { color: #efc98c; font-style: normal; }
+.ticker-value .gold-clock { color: #b7c3ca; font-size: 11px; }
+.bank-row { padding: 10px 12px; border: 1px solid #d8b16b55; border-radius: 10px; background: #d8b16b0c; }
+.bank-prices { display: grid; grid-template-columns: 1fr 1fr; margin: 5px 0; }
+.bank-prices > div { display: grid; gap: 2px; }
+.bank-prices b { font-size: 20px; }
+.bank-prices > div:first-child b { color: #f4d092; }
+.gold-limits { margin-top: 6px; }
+.gold-limits .alert-controls { margin-top: 4px; }
+.gold-limits label { white-space: nowrap; font-size: 11px; }
+.gold-list + .panel-footer { padding-top: 6px; }
