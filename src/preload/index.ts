@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 const api = {
   setExpanded: (expanded: boolean) => ipcRenderer.invoke('float:set-expanded', expanded),
-  fetchGoldQuotes: () => ipcRenderer.invoke('quotes:fetch-gold'),
+  fetchGoldQuotes: (accounts: string[]) => ipcRenderer.invoke('quotes:fetch-gold', accounts),
   setViewMode: (mode: 'mini' | 'panel') => ipcRenderer.invoke('float:set-view-mode', mode),
   getState: () => ipcRenderer.invoke('float:get-state') as Promise<{ locked: boolean; viewMode: 'mini' | 'panel' }>,
   onViewModeChanged: (callback: (mode: 'mini' | 'panel') => void) => {

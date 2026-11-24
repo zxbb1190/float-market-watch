@@ -495,7 +495,7 @@ h1 {
 }
 .cost-summary button { display: inline-flex; align-items: center; gap: 6px; color: #f4d092; }
 .cost-actions { margin-top: 4px; }
-.cost-actions input {
+.position-fields input {
   flex: 1;
   min-width: 0;
   height: 26px;
@@ -508,3 +508,15 @@ h1 {
 .cost-actions .cost-save { background: #f4d092; color: #201c16; }
 .cost-editor [role="alert"] { display: block; margin-top: 4px; color: #ffc2af; }
 .ticker-value .ticker-profit { font-size: 11px; }
+.account-toolbar, .account-chooser { font-size: 12px; color: #c4cdd1; }
+.account-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.account-toolbar button { background: #26353b; padding: 5px 9px; border-radius: 5px; color: #f4d092; }
+.account-chooser { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 12px; }
+.account-chooser label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.account-chooser small { display: block; color: #a9b6bd; font-size: 10px; }
+.account-chooser input { accent-color: #e4c184; }
+.account-chooser .cost-actions { grid-column: 1 / -1; }
+.bank-row + .bank-row { margin-top: 6px; }
+.position-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.position-fields label { display: grid; gap: 3px; }
+.position-detail { display: flex; flex-wrap: wrap; gap: 4px 12px; width: 100%; }

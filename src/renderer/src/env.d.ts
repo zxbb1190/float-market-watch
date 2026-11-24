@@ -17,7 +17,7 @@ interface QuoteSnapshot {
 }
 
 interface MarketFloatApi {
-  fetchGoldQuotes(): Promise<import('../../shared/gold').GoldQuotes>
+  fetchGoldQuotes(accounts: import('../../shared/gold').AccountId[]): Promise<import('../../shared/gold').GoldQuotes>
   setExpanded(expanded: boolean): Promise<void>
   setViewMode(mode: 'mini' | 'panel'): Promise<void>
   getState(): Promise<{ locked: boolean; viewMode: 'mini' | 'panel' }>

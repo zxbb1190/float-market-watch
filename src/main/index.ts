@@ -350,7 +350,7 @@ ipcMain.handle('float:set-view-mode', (_event, mode: FloatViewMode) => {
 
 ipcMain.handle('float:get-state', () => ({ locked, viewMode: currentViewMode }))
 
-ipcMain.handle('quotes:fetch-gold', fetchGoldQuotes)
+ipcMain.handle('quotes:fetch-gold', (_event, accounts: unknown) => fetchGoldQuotes(accounts))
 
 ipcMain.handle('float:show-menu', () => {
   openContextMenu()

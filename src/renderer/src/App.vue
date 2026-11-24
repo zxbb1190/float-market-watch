@@ -156,13 +156,13 @@ function trendClass(changePct: number): string {
       <div v-if="isGold" :key="activeGold.symbol" class="ticker-summary">
         <div class="ticker-name">
           <strong>{{ activeGold.name }}</strong>
-          <span>{{ activeGold.symbol === 'CMB' ? '客户卖出' : activeGold.symbol }} · {{ activeGold.unit }}</span>
+          <span>{{ activeGold.symbol === 'XAU' ? 'XAU' : (activeGold.detail === '京东金融' ? '京东卖出' : '客户卖出') }} · {{ activeGold.unit }}</span>
         </div>
         <div class="ticker-value">
           <strong>{{ formatPrice(activeGold.quote?.price) }}</strong>
           <span v-if="activeGold.status" class="gold-status">{{ activeGold.status }}</span>
-          <span v-else-if="activeGold.symbol === 'CMB' && gold.profitLabel" class="ticker-profit"
-            :class="trendClass(gold.profitPerGram ?? 0)" :title="gold.profitLabel">{{ gold.profitLabel }}</span>
+          <span v-else-if="activeGold.profitLabel" class="ticker-profit"
+            :class="trendClass(activeGold.profit ?? 0)" :title="activeGold.profitLabel">{{ activeGold.profitLabel }}</span>
           <span v-else-if="activeGold.quote?.changePct !== undefined" :class="activeChangeClass">{{ formatPct(activeGold.quote.changePct) }}</span>
           <span v-else class="gold-clock">{{ activeGold.quote?.time.slice(-8) }}</span>
         </div>
@@ -277,7 +277,7 @@ function trendClass(changePct: number): string {
       </template>
 
       <footer class="panel-footer">
-        <span>{{ isGold ? '招行 / 新浪 · 北京时间 · 15秒刷新' : store.error || '新浪股票/基金行情 · 3秒刷新' }}</span>
+        <span>{{ isGold ? '北京时间 · 15秒刷新' : store.error || '新浪股票/基金行情 · 3秒刷新' }}</span>
         <span class="lock-state">
           <Unlock v-if="!locked" :size="12" />
           <Lock v-else :size="12" />

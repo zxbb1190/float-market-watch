@@ -58,16 +58,17 @@ https://hq.sinajs.cn/
 
 ## 黄金行情
 
-黄金面板使用独立的 `quotes:fetch-gold` IPC，每 15 秒查询两个公开来源，各自超时 6 秒。一个来源失败时，其他已返回的品种仍然显示。时间按北京时间解析。来源时间超过五分钟的报价标记为「非最新报价」，暂停、过旧和缺失报价均不参与到价提醒。
+黄金面板使用 `quotes:fetch-gold` IPC，每 15 秒并行查询伦敦金和已选账户，单个请求最多等待 6 秒。来源时间按北京时间展示。暂停、缺失或来源时间超过五分钟的报价均跳过持仓估值和提醒。
 
 | 品种 | 行情来源 | 价格口径 |
 | --- | --- | --- |
 | 招行黄金账户 | 招行市场中心 `https://mbmodule-openapi.paas.cmbchina.com/product/v1/func/market-center` | 表单 POST，`params=[{"prdType":"H","prdCode":""}]`。取 `FQAMBPRCZ1.zSelPrc` 客户卖出、`zBuyPrc` 客户买入和 `NowTime`。仅在 `MarketDay` 和 `QuotedPrice` 都为真时启用提醒。 |
-| 上金所 Au99.99 | 新浪 `gds_AU9999` | 国内现货，人民币元/克 |
+| 建行黄金积存 | 建行贵金属产品页，在同一公开访问会话依次查询 `100119`、`NGJS01` | 主动积存价 `Cst_Buy_Prc` 和赎回价 `Cst_Sell_Prc`，报价时间 `Tms`。 |
+| 工行积存金 | 工行 `mybank.icbc.com.cn/servlet/AsynGetDataServlet`，表单 `tranCode=A00622` | 取 `JC001` 主动积存价 `ActivePrice`、赎回价 `SellPrice`。官网仅提供报价日 `ActiveDate` 与查询时刻 `sysdate`，日期不一致时标记暂停报价。Windows 通过系统 curl 验证 TLS 并读取公开报价。 |
+| 京东金融银行积存金 | 京东金融产品接口 `queryGoldProductInfo` 核对品名，行情接口 `cfGetLatestPriceInfo` 按具体 SKU 查询 | 核对返回 SKU，然后取 `buyPrice`、`sellPrice` 和毫秒时间戳 `time`。渠道双边价格与手续费独立，估值不扣手续费。无报价时允许保存持仓。 |
 | 伦敦现货金 | 新浪 `hf_XAU` | XAU/USD 现货参考，美元/金衡盎司 |
-| 纽约黄金 | 新浪 `hf_GC` | 纽约黄金期货参考（新浪 GC CFD），美元/金衡盎司 |
 
-三个新浪黄金代码共用一次请求，最新价取字段 0，对比价取字段 7，日期和时间取字段 12 和 6。招行买卖报价按银行返回的双边价格分别展示。[招行黄金账户业务协议](https://s3gw.cmbimg.com/lb50.01-cmbweb-prd/cmbcms/20241121/9af46a53-b8c1-4e36-9aa3-40eeb999311d.pdf) · [新浪伦敦金](https://finance.sina.com.cn/futures/quotes/XAU.shtml) · [新浪纽约黄金](https://finance.sina.com.cn/futures/quotes/GC.shtml)
+伦敦金最新价取字段 0，对比价取字段 7，日期和时间取字段 12 和 6。银行账户的持仓按产品和渠道分开，伦敦金用于独立盯盘。[招行黄金账户业务协议](https://s3gw.cmbimg.com/lb50.01-cmbweb-prd/cmbcms/20241121/9af46a53-b8c1-4e36-9aa3-40eeb999311d.pdf) · [建行黄金积存](https://gold.ccb.com/chn/home/gold_new/cpjs/index.shtml) · [京东金融积存金产品页](https://m.jdjygold.com/finance-gold/gold-standard/home/?productSku=1961543816) · [新浪伦敦金](https://finance.sina.com.cn/futures/quotes/XAU.shtml)
 
 ## 合规边界
 
