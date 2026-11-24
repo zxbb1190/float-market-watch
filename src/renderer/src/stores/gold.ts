@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { goldAccounts, goldStatus, type AccountId, type GoldQuotes, type GoldSymbol } from '../../../shared/gold'
+import { goldAccounts, goldMarkets, goldStatus, type AccountId, type GoldQuotes, type GoldSymbol } from '../../../shared/gold'
 import { formatPrice } from '../utils/formatters'
 
 type Limit = 'above' | 'below'
@@ -52,7 +52,7 @@ function loadAlerts(): Alerts {
   const alerts: Alerts = {}
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey) ?? '{}')
-    for (const symbol of [...goldAccounts.map((item) => item.symbol), 'XAU'] as GoldSymbol[]) {
+    for (const { symbol } of [...goldAccounts, ...goldMarkets]) {
       for (const limit of ['above', 'below'] as const) {
         const value = saved?.[symbol]?.[limit]
         if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
@@ -76,13 +76,15 @@ export const useGoldStore = defineStore('gold', () => {
   const rows = computed(() => {
     const instruments = [
       ...goldAccounts.filter((account) => selected.value.includes(account.symbol)),
-      { symbol: 'XAU', name: '伦敦金', detail: 'XAU/USD · 现货' } as const
+      ...goldMarkets
     ]
     return instruments.map((instrument) => {
       const symbol = instrument.symbol
       const quote = quotes.value[symbol]
       const status = checkedAt.value ? goldStatus(quote, checkedAt.value) : '获取中'
-      const position = symbol === 'XAU' ? undefined : positions.value[symbol]
+      const accountId = 'sku' in instrument ? instrument.symbol : undefined
+      const unit = 'unit' in instrument ? instrument.unit : '元/克'
+      const position = accountId ? positions.value[accountId] : undefined
       const perGram = quote && !status && position?.cost !== undefined
         ? Number((quote.price - position.cost).toFixed(4)) : undefined
       const total = perGram !== undefined && position?.grams !== undefined
@@ -90,7 +92,7 @@ export const useGoldStore = defineStore('gold', () => {
       const profit = total ?? perGram
       const profitLabel = profit === undefined ? '' : profit === 0 ? '持平'
         : `${profit > 0 ? '浮盈' : '浮亏'} ${formatPrice(Math.abs(profit))} ${total !== undefined ? '元' : '元/克'}`
-      return { ...instrument, unit: symbol === 'XAU' ? '美元/盎司' : '元/克', quote, status, position, perGram, total, profit, profitLabel }
+      return { ...instrument, accountId, unit, quote, status, position, perGram, total, profit, profitLabel }
     })
   })
 
@@ -127,7 +129,7 @@ export const useGoldStore = defineStore('gold', () => {
   }
 
   function checkAlerts(): void {
-    for (const { symbol, name, detail, quote, status, unit } of rows.value) {
+    for (const { symbol, accountId, name, detail, quote, status, unit } of rows.value) {
       if (!quote || status) continue
       for (const limit of ['above', 'below'] as const) {
         const threshold = alerts.value[symbol]?.[limit]
@@ -136,7 +138,7 @@ export const useGoldStore = defineStore('gold', () => {
         if (!hit) triggered.delete(key)
         else if (!triggered.has(key)) {
           triggered.add(key)
-          const side = symbol === 'XAU' ? '最新价' : '客户卖出价'
+          const side = accountId ? '客户卖出价' : '最新价'
           void window.marketFloat?.notifyAlert(`${name} · ${detail} 到价提醒`,
             `${side} ${formatPrice(quote.price)} ${unit}，已达${limit === 'above' ? '上限' : '下限'} ${threshold}。`)
         }

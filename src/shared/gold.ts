@@ -13,7 +13,13 @@ export const goldAccounts = [
 
 export type GoldAccount = (typeof goldAccounts)[number]
 export type AccountId = GoldAccount['symbol']
-export type GoldSymbol = AccountId | 'XAU'
+export const goldMarkets = [
+  { symbol: 'XAU', name: '伦敦金', detail: 'XAU/USD · 现货', unit: '美元/盎司', sinaCode: 'hf_XAU' },
+  { symbol: 'GC', name: '纽约黄金', detail: 'GC · 期货参考', unit: '美元/盎司', sinaCode: 'hf_GC' },
+  { symbol: 'AU9999', name: '上金所 Au99.99', detail: '国内现货', unit: '元/克', sinaCode: 'gds_AU9999' }
+] as const
+
+export type GoldSymbol = AccountId | (typeof goldMarkets)[number]['symbol']
 
 export interface GoldQuote {
   price: number

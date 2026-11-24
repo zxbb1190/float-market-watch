@@ -16,7 +16,7 @@ test('holdings migrate and stay separate when the watched accounts change', asyn
   const reopen = () => { setActivePinia(createPinia()); return useGoldStore() }
   const gold = reopen()
   assert.deepEqual(gold.selected, ['CMB'])
-  assert.deepEqual(gold.rows.map(row => row.symbol), ['CMB', 'XAU'])
+  assert.deepEqual(gold.rows.map(row => row.symbol), ['CMB', 'XAU', 'GC', 'AU9999'])
   assert.equal(gold.positions.CMB.cost, 770.1234)
   gold.setAccounts(['CMB', 'CCB'])
   const old = requests.shift()
@@ -33,7 +33,7 @@ test('holdings migrate and stay separate when the watched accounts change', asyn
   old.resolve({ CMB: quote, CCB: { ...quote, price: 100 } })
   await new Promise(resolve => setImmediate(resolve))
   assert.equal(gold.rows[0].total, 1.01)
-  assert.deepEqual(gold.rows.map(row => row.symbol), ['CCB', 'XAU'])
+  assert.deepEqual(gold.rows.map(row => row.symbol), ['CCB', 'XAU', 'GC', 'AU9999'])
   const refresh = gold.refresh()
   requests.shift().resolve({ CCB: { ...quote, closed: true } })
   await refresh
@@ -41,7 +41,7 @@ test('holdings migrate and stay separate when the watched accounts change', asyn
   assert.deepEqual(reopen().positions.CMB, { cost: 770.1234, grams: 2.75 })
   gold.setAccounts([])
   requests.shift().resolve({})
-  assert.deepEqual(reopen().rows.map(row => row.symbol), ['XAU'])
+  assert.deepEqual(reopen().rows.map(row => row.symbol), ['XAU', 'GC', 'AU9999'])
   gold.savePosition('CMB', '', '')
   assert.equal(reopen().positions.CMB.cost, undefined)
 })

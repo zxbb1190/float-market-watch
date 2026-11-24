@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
-import { goldAccounts, type GoldAccount, type GoldQuote, type GoldQuotes } from '../shared/gold'
+import { goldAccounts, goldMarkets, type GoldAccount, type GoldQuote, type GoldQuotes } from '../shared/gold'
 
 function positive(value: unknown): number | undefined {
   if (typeof value !== 'string' && typeof value !== 'number') return
@@ -19,13 +19,15 @@ function quoteTime(value: unknown): Pick<GoldQuote, 'time' | 'quotedAt'> | undef
 
 export function parseSinaGold(text: string): GoldQuotes {
   const quotes: GoldQuotes = {}
-  for (const [, row] of text.matchAll(/hq_str_hf_XAU\s*=\s*"([^"]*)"/g)) {
+  for (const [, code, row] of text.matchAll(/hq_str_(\w+)\s*=\s*"([^"]*)"/g)) {
+    const market = goldMarkets.find((item) => item.sinaCode === code)
+    if (!market) continue
     const fields = row.split(',')
     const price = positive(fields[0])
     const timestamp = quoteTime(`${fields[12]} ${fields[6]}`)
     if (!price || !timestamp) continue
     const reference = positive(fields[7])
-    quotes.XAU = { price, ...timestamp, changePct: reference ? (price / reference - 1) * 100 : undefined }
+    quotes[market.symbol] = { price, ...timestamp, changePct: reference ? (price / reference - 1) * 100 : undefined }
   }
   return quotes
 }
@@ -49,7 +51,8 @@ export function parseCmbGold(payload: CmbResponse | null): GoldQuotes {
 }
 
 async function readSinaGold(): Promise<GoldQuotes> {
-  const response = await fetch(`https://hq.sinajs.cn/rn=${Date.now()}&list=hf_XAU`, {
+  const codes = goldMarkets.map((item) => item.sinaCode).join(',')
+  const response = await fetch(`https://hq.sinajs.cn/rn=${Date.now()}&list=${codes}`, {
     headers: { Referer: 'https://finance.sina.com.cn' },
     signal: AbortSignal.timeout(6000)
   })

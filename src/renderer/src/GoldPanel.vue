@@ -71,7 +71,7 @@ function changeLimit(symbol: GoldSymbol, limit: 'above' | 'below', event: Event)
       </div>
       <small v-if="accountError" role="alert">{{ accountError }}</small>
     </form>
-    <article v-for="row in gold.rows" :key="row.symbol" class="gold-row" :class="{ 'bank-row': row.symbol !== 'XAU' }">
+    <article v-for="row in gold.rows" :key="row.symbol" class="gold-row" :class="{ 'bank-row': row.accountId }">
       <div class="gold-heading">
         <div>
           <strong>{{ row.name }}</strong>
@@ -85,7 +85,7 @@ function changeLimit(symbol: GoldSymbol, limit: 'above' | 'below', event: Event)
         </button>
       </div>
 
-      <div v-if="row.symbol !== 'XAU'" class="bank-prices">
+      <div v-if="row.accountId" class="bank-prices">
         <div><span>客户卖出 · 元/克</span><b>{{ formatPrice(row.quote?.price) }}</b></div>
         <div><span>客户买入 · 元/克</span><b>{{ formatPrice(row.quote?.customerBuy) }}</b></div>
       </div>
@@ -101,8 +101,8 @@ function changeLimit(symbol: GoldSymbol, limit: 'above' | 'below', event: Event)
         <span v-if="row.quote">{{ row.symbol === 'ICBC' ? '官网查询 ' : '' }}{{ row.quote.time }}</span>
         <em v-if="row.status">{{ row.status }}</em>
       </div>
-      <template v-if="row.symbol !== 'XAU'">
-        <form v-if="editingPosition === row.symbol" class="cost-editor" @submit.prevent="submitPosition(row.symbol)" @keydown.esc.prevent="editingPosition = undefined">
+      <template v-if="row.accountId">
+        <form v-if="editingPosition === row.accountId" class="cost-editor" @submit.prevent="submitPosition(row.accountId)" @keydown.esc.prevent="editingPosition = undefined">
           <div class="position-fields">
             <label>成本均价（元/克）
               <input ref="costInput" v-model="costDraft" inputmode="decimal" autocomplete="off" @input="costError = ''" />
@@ -114,12 +114,12 @@ function changeLimit(symbol: GoldSymbol, limit: 'above' | 'below', event: Event)
           <div class="cost-actions">
             <button type="submit" class="cost-save">保存</button>
             <button type="button" @click="editingPosition = undefined">取消</button>
-            <button v-if="row.position?.cost || row.position?.grams" type="button" @click="submitPosition(row.symbol, true)">清除持仓</button>
+            <button v-if="row.position?.cost || row.position?.grams" type="button" @click="submitPosition(row.accountId, true)">清除持仓</button>
           </div>
           <small v-if="costError" id="cost-error" role="alert">{{ costError }}</small>
         </form>
         <div v-else class="cost-summary">
-          <button type="button" @click="editPosition(row.symbol)">
+          <button type="button" @click="editPosition(row.accountId)">
             {{ row.position?.cost || row.position?.grams ? '编辑持仓' : '设置持仓' }}
             <Pencil :size="12" aria-hidden="true" />
           </button>
@@ -135,7 +135,7 @@ function changeLimit(symbol: GoldSymbol, limit: 'above' | 'below', event: Event)
         </div>
       </template>
       <div v-if="editing === row.symbol" class="gold-limits">
-        <small>{{ row.symbol === 'XAU' ? '最新价' : '客户卖出价' }}提醒（{{ row.unit }}）</small>
+        <small>{{ row.accountId ? '客户卖出价' : '最新价' }}提醒（{{ row.unit }}）</small>
         <div class="alert-controls">
           <label>上限<input type="number" step="any" min="0" :value="gold.alerts[row.symbol]?.above" @change="changeLimit(row.symbol, 'above', $event)" /></label>
           <label>下限<input type="number" step="any" min="0" :value="gold.alerts[row.symbol]?.below" @change="changeLimit(row.symbol, 'below', $event)" /></label>

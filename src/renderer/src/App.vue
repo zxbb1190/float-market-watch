@@ -156,7 +156,7 @@ function trendClass(changePct: number): string {
       <div v-if="isGold" :key="activeGold.symbol" class="ticker-summary">
         <div class="ticker-name">
           <strong>{{ activeGold.name }}</strong>
-          <span>{{ activeGold.symbol === 'XAU' ? 'XAU' : (activeGold.detail === '京东金融' ? '京东卖出' : '客户卖出') }} · {{ activeGold.unit }}</span>
+          <span>{{ activeGold.accountId ? (activeGold.detail === '京东金融' ? '京东卖出' : '客户卖出') : activeGold.symbol }} · {{ activeGold.unit }}</span>
         </div>
         <div class="ticker-value">
           <strong>{{ formatPrice(activeGold.quote?.price) }}</strong>
